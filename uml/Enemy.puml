@@ -1,0 +1,146 @@
+@startuml
+'https://plantuml.com/class-diagram'
+
+
+'abstract class AbstractFlyingObject
+'{
+'    # locationX:int
+'    # locationY:int
+'    # speedX:int
+'    # speedY:int
+'    # image:BufferedImage
+'    # width:int
+'    # height:int
+'    # isValid:boolean
+'
+'    + AbstractFlyingObject(int locationX, int locationY, int speedX, int speedY)
+'    + forward():void
+'    + crash(AbstractFlyingObject flyingObject):boolean
+'    + setLocation(double locationX, double locationY):void
+'    + getLocationX():int
+'    + getLocationY():int
+'    + getSpeedY():int
+'    + getImage():BufferedImage
+'    + getWidth():int
+'    + getHeight():int
+'    + notValid():boolean
+'    + vanish():void
+'}
+'
+'abstract class AbstractAircraft
+'{
+'	# maxHp:int
+'    # hp:int
+'    + AbstractAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+'    + decreaseHp(int decrease):void
+'    + getHp():int
+'    + {abstract} shoot():List<BaseBullet>
+'}
+'
+'AbstractFlyingObject <|-- AbstractAircraft
+
+interface ICreateProp {
+    + getProp(): BaseProp
+}
+
+interface ICreateReward {
+    + getScore(): int
+}
+
+ICreateProp <|-- ICreateReward
+
+abstract class AbstractEnemyAircraft {
+    + AbstractEnemyAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+    + {abstract} getScore(): int
+    + {abstract} getProp(): BaseProp
+    + forward(): void
+}
+
+'AbstractAircraft <|-- AbstractEnemyAircraft
+ICreateReward <|.. AbstractEnemyAircraft
+
+class MobEnemy {
+    + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + shoot():List<BaseBullet>
+    + getScore(): int
+    + getProp(): BaseProp
+}
+
+AbstractEnemyAircraft <|-- MobEnemy
+
+class EliteEnemy {
+    - shootNum:int
+    - power:int
+    - direction:int
+    - propWeights:List<Float>
+    - propSelector: RandomPropFactoryGenerator
+    + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + shoot():List<BaseBullet>
+    + getScore(): int
+    + getProp(): BaseProp
+}
+
+AbstractEnemyAircraft <|-- EliteEnemy
+
+class BossEnemy {
+    - shootNum:int
+    - power:int
+    - direction:int
+    + BossEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + shoot():List<BaseBullet>
+    + getScore(): int
+    + getProp(): BaseProp
+}
+
+AbstractEnemyAircraft <|-- BossEnemy
+
+abstract AbstractEnemyFactory {
+    + {abstract} createEnemy(): AbstractEnemyAircraft
+    # getLocationX(): int
+    # getLocationY(): int
+}
+
+AbstractEnemyFactory ..> AbstractEnemyAircraft
+
+class MobEnemyFactory {
+    - speedX: int
+    - speedY: int
+    - hp: int
+    + MobEnemyFactory()
+    + createEnemy(): AbstractEnemyAircraft
+}
+
+AbstractEnemyFactory <|-- MobEnemyFactory
+MobEnemyFactory ..> MobEnemy
+
+class EliteEnemyFactory {
+    - speedX: int
+    - speedY: int
+    - hp: int
+    + EliteEnemyFactory()
+    + createEnemy(): AbstractEnemyAircraft
+}
+
+AbstractEnemyFactory <|-- EliteEnemyFactory
+EliteEnemyFactory ..> EliteEnemy
+
+
+class BossEnemyFactory {
+    - speedX: int
+    - speedY: int
+    - hp: int
+    + BossEnemyFactory()
+    + createEnemy(): AbstractEnemyAircraft
+}
+
+AbstractEnemyFactory <|-- BossEnemyFactory
+BossEnemyFactory ..> BossEnemy
+
+
+
+
+
+
+
+
+@enduml

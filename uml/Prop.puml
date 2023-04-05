@@ -1,0 +1,73 @@
+@startuml
+
+interface IAircraftForProp {
+    + increaseHp(int hp): void
+    + increaseFire(int num): void
+    + addBomb(int num): void
+}
+
+
+abstract class BaseProp {
+    + BaseProp(int locationX, int locationY, int speedX, int speedY)
+    + forward(): void
+    + {abstract} effect(IAircraftForProp aircraft): void
+}
+
+'AbstractFlyingObject <|-- BaseProp
+IAircraftForProp <.. BaseProp
+
+class BloodProp {
+    - increaseBlood: int
+    + BloodProp(int locationX, int locationY, int speedX, int speedY)
+    + effect(IAircraftForProp aircraft): void
+}
+
+BaseProp <|-- BloodProp
+
+class BombProp {
+    - bombNum: int
+    + BombProp(int locationX, int locationY, int speedX, int speedY)
+    + effect(IAircraftForProp aircraft): void
+}
+
+BaseProp <|-- BombProp
+
+class FireProp {
+    - bulletNum: int
+    + FireProp(int locationX, int locationY, int speedX, int speedY)
+    + effect(IAircraftForProp aircraft): void
+}
+
+BaseProp <|-- FireProp
+
+abstract class AbstractPropFactory {
+    + {abstract} createProp(int locationX, int locationY): BaseProp
+    # getSpeedX(): int
+    # getSpeedY(): int
+}
+
+AbstractPropFactory ..> BaseProp
+
+class BloodPropFactory {
+    + createProp(int locationX, int locationY): BaseProp
+}
+
+BloodPropFactory ..> BloodProp
+AbstractPropFactory <|-- BloodPropFactory
+
+class BombPropFactory {
+    + createProp(int locationX, int locationY): BaseProp
+}
+
+BombPropFactory ..> BombProp
+AbstractPropFactory <|-- BombPropFactory
+
+class FirePropFactory {
+    + createProp(int locationX, int locationY): BaseProp
+}
+
+FirePropFactory ..> FireProp
+AbstractPropFactory <|-- FirePropFactory
+
+
+@enduml

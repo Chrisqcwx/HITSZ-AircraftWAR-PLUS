@@ -1,0 +1,323 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class MotionInfo {
+    - x: int
+    - y: int
+    - speedX: int
+    - speedY: int
+    + MotionInfo(int x, int y, int speedX, int speedY)
+    + getX(): int
+    + getY(): int
+    + getSpeedX(): int
+    + getSpeedY(): int
+}
+
+class RandomChoiceGenerator {
+    - random: Random
+    - choicesNum: int
+    - splitLine: List<Float>
+    + RandomChoiceGenerator(List<Float> weights)
+    + nextChoice(): int
+}
+
+class RandomPropGenerator {
+    - propFactories: List<AbstractPropFactory>
+    + RandomPropGenerator(List<Float> weights)
+    + nextProp(int locationX, int locationY): BaseProp
+}
+
+RandomChoiceGenerator <|-- RandomPropGenerator
+
+
+class RandomEnemyFactoryGenerator {
+    + RandomEnemyFactoryGenerator(List<Float> weights)
+    + nextEnemyFactory(): AbstractEnemyFactory
+}
+
+RandomChoiceGenerator <|-- RandomEnemyFactoryGenerator
+
+abstract class AbstractFlyingObject
+{
+    # locationX:int
+    # locationY:int
+    # speedX:int
+    # speedY:int
+    # image:BufferedImage
+    # width:int
+    # height:int
+    # isValid:boolean
+
+    + AbstractFlyingObject(int locationX, int locationY, int speedX, int speedY)
+    + forward():void
+    + crash(AbstractFlyingObject flyingObject):boolean
+    + setLocation(double locationX, double locationY):void
+    + getLocationX():int
+    + getLocationY():int
+    + getSpeedY():int
+    + getImage():BufferedImage
+    + getWidth():int
+    + getHeight():int
+    + notValid():boolean
+    + vanish():void
+}
+abstract class AbstractAircraft
+{
+	# maxHp:int
+    # hp:int
+    + AbstractAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+    + decreaseHp(int decrease):void
+    + getHp():int
+    + {abstract} shoot():List<BaseBullet>
+}
+
+interface IAircraftForProp {
+    + increaseHp(int hp): void
+    + increaseFire(int num): void
+    + addBomb(int num): void
+}
+
+class HeroAircraft {
+    - shootNum:int
+    - power:int
+    - direction:int
+    - {static} heroAircraft: HeroAircraft
+    - shootMotionInfoGenerator: ShootMotionInfoGenerator
+    - HeroAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+    + {static} getInstance(): HeroAircraft
+    + forward():void
+    + shoot():List<BaseBullet>
+    + increaseHp(int hp): void
+    + increaseFire(int num): void
+    + addBomb(int num): void
+}
+
+AbstractAircraft <|-- HeroAircraft
+IAircraftForProp <|.. HeroAircraft
+
+
+interface ICreateProp {
+    + getProps(): List<BaseProp>
+}
+
+interface ICreateReward {
+    + getScore(): int
+}
+
+ICreateProp <|-- ICreateReward
+
+abstract class AbstractEnemyAircraft {
+    + AbstractEnemyAircraft(int locationX, int locationY, int speedX, int speedY, int hp)
+    + {abstract} getScore(): int
+    + {abstract} getProps(): List<BaseProp>
+    + forward(): void
+}
+
+AbstractAircraft <|-- AbstractEnemyAircraft
+ICreateReward <|.. AbstractEnemyAircraft
+
+class MobEnemy {
+    + MobEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + shoot():List<BaseBullet>
+    + getScore(): int
+    + getProps(): List<BaseProp>
+}
+
+AbstractEnemyAircraft <|-- MobEnemy
+
+class EliteEnemy {
+    - shootNum:int
+    - power:int
+    - direction:int
+    - propWeights:List<Float>
+    - propSelector: RandomPropGenerator
+    + EliteEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + shoot():List<BaseBullet>
+    + getScore(): int
+    + getProps(): List<BaseProp>
+}
+
+AbstractEnemyAircraft <|-- EliteEnemy
+EliteEnemy --> RandomPropGenerator
+
+class BossEnemy {
+    - shootNum:int
+    - power:int
+    - direction:int
+    - propWeights:List<Float>
+    - propSelector: RandomPropGenerator
+    + BossEnemy(int locationX, int locationY, int speedX, int speedY, int hp)
+    + shoot():List<BaseBullet>
+    + getScore(): int
+    + getProps(): List<BaseProp>
+}
+
+AbstractEnemyAircraft <|-- BossEnemy
+BossEnemy --> RandomPropGenerator
+
+abstract class BaseBullet
+{
+    - power:int
+    + BaseBullet(int locationX, int locationY, int speedX, int speedY, int power)
+    + BaseBullet(MotionInfo motionInfo, int power)
+    + forward():void
+	+ getPower():int
+}
+
+BaseBullet ..> MotionInfo
+
+class HeroBullet {
+    + HeroBullet(int locationX, int locationY, int speedX, int speedY, int power)
+    + HeroBullet(MotionInfo motionInfo, int power)
+}
+
+HeroAircraft ..> HeroBullet
+HeroBullet ..> MotionInfo
+
+class EnemyBullet {
+    + EnemyBullet(int locationX, int locationY, int speedX, int speedY, int power)
+    + EnemyBullet(MotionInfo motionInfo, int power)
+}
+
+BaseBullet <|-- HeroBullet
+BaseBullet <|-- EnemyBullet
+EliteEnemy ..> EnemyBullet
+EnemyBullet ..> MotionInfo
+
+
+AbstractFlyingObject <|-- AbstractAircraft
+AbstractFlyingObject <|-- BaseBullet
+
+
+abstract class BaseProp {
+    + BaseProp(int locationX, int locationY, int speedX, int speedY)
+    + forward(): void
+    + {abstract} effect(IAircraftForProp aircraft): void
+}
+
+AbstractFlyingObject <|-- BaseProp
+IAircraftForProp <.. BaseProp
+
+class BloodProp {
+    - increaseBlood: int
+    + BloodProp(int locationX, int locationY, int speedX, int speedY)
+    + effect(IAircraftForProp aircraft): void
+}
+
+BaseProp <|-- BloodProp
+RandomPropGenerator ..> BloodPropFactory
+
+class BombProp {
+    - bombNum: int
+    + BombProp(int locationX, int locationY, int speedX, int speedY)
+    + effect(IAircraftForProp aircraft): void
+}
+
+BaseProp <|-- BombProp
+RandomPropGenerator ..> BombPropFactory
+
+class FireProp {
+    - bulletNum: int
+    + FireProp(int locationX, int locationY, int speedX, int speedY)
+    + effect(IAircraftForProp aircraft): void
+}
+
+BaseProp <|-- FireProp
+RandomPropGenerator ..> FirePropFactory
+
+abstract class AbstractEnemyFactory {
+    + createEnemy(): AbstractEnemyAircraft
+    # getLocationX(): int
+    # getLocationY(): int
+}
+
+AbstractEnemyFactory ..> AbstractEnemyAircraft
+
+class MobEnemyFactory {
+    - speedX: int
+    - speedY: int
+    - hp: int
+    + MobEnemyFactory()
+    + createEnemy(): AbstractEnemyAircraft
+}
+
+AbstractEnemyFactory <|-- MobEnemyFactory
+MobEnemyFactory ..> MobEnemy
+RandomEnemyFactoryGenerator ..> MobEnemyFactory
+
+class EliteEnemyFactory {
+    - speedX: int
+    - speedY: int
+    - hp: int
+    + EliteEnemyFactory()
+    + createEnemy(): AbstractEnemyAircraft
+}
+
+AbstractEnemyFactory <|-- EliteEnemyFactory
+EliteEnemyFactory ..> EliteEnemy
+RandomEnemyFactoryGenerator ..> EliteEnemyFactory
+
+class BossEnemyFactory {
+    - speedX: int
+    - speedY: int
+    - hp: int
+    + BossEnemyFactory()
+    + createEnemy(): AbstractEnemyAircraft
+}
+
+AbstractEnemyFactory <|-- BossEnemyFactory
+BossEnemyFactory ..> BossEnemy
+RandomEnemyFactoryGenerator ..> BossEnemyFactory
+
+abstract class AbstractPropFactory {
+    + {abstract} createProp(int locationX, int locationY): BaseProp
+    # getSpeedX(): int
+    # getSpeedY(): int
+}
+
+AbstractPropFactory ..> BaseProp
+
+class BloodPropFactory {
+    + createProp(int locationX, int locationY): BaseProp
+}
+
+BloodPropFactory ..> BloodProp
+AbstractPropFactory <|-- BloodPropFactory
+
+class BombPropFactory {
+    + createProp(int locationX, int locationY): BaseProp
+}
+
+BombPropFactory ..> BombProp
+AbstractPropFactory <|-- BombPropFactory
+
+class FirePropFactory {
+    + createProp(int locationX, int locationY): BaseProp
+}
+
+FirePropFactory ..> FireProp
+AbstractPropFactory <|-- FirePropFactory
+
+interface ShootMotionInfoGenerator {
+    + createShootInfos(int x, int y, int speed, int num): List<MotionInfo>
+}
+
+ShootMotionInfoGenerator ..> MotionInfo
+HeroAircraft ..> ShootMotionInfoGenerator
+EliteEnemy ..> ShootMotionInfoGenerator
+
+class DirectShootMotionInfoGenerator {
+    + createShootInfos(int x, int y, int speed, int num): List<MotionInfo>
+}
+
+DirectShootMotionInfoGenerator <|-- ShootMotionInfoGenerator
+DirectShootMotionInfoGenerator ..> MotionInfo
+
+class RoundShootMotionInfoGenerator {
+    + createShootInfos(int x, int y, int speed, int num): List<MotionInfo>
+}
+
+RoundShootMotionInfoGenerator <|-- ShootMotionInfoGenerator
+RoundShootMotionInfoGenerator ..> MotionInfo
+
+@enduml
